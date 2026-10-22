@@ -2,16 +2,20 @@
 
 Reporta la longitud de cada ruta y su gap contra el optimo conocido (7542),
 y guarda los resultados en results/tables/heuristicas_berlin52.csv.
+
+Parametros faciles de cambiar para una demo en vivo: CIUDAD_INICIO (desde
+que ciudad arranca vecino mas cercano) y OPTIMO_BERLIN52 (el valor contra
+el que se mide el gap, si algun dia se usa otra instancia).
 """
 import csv
 import time
 from pathlib import Path
 
-from tsp.distance import matriz_distancias, tour_length
-from tsp.heuristics import nearest_neighbor, two_opt
-from tsp.io import leer_tsp
+from tsp.datos import leer_tsp, longitud_ruta, matriz_distancias
+from tsp.heuristicas import dos_opt, vecino_mas_cercano
 
 RAIZ = Path(__file__).resolve().parents[1]
+CIUDAD_INICIO = 0
 OPTIMO_BERLIN52 = 7542
 
 
@@ -20,24 +24,24 @@ def main():
     D = matriz_distancias(inst.coords)
 
     t0 = time.perf_counter()
-    ruta_nn = nearest_neighbor(D, start=0)
+    ruta_nn = vecino_mas_cercano(D, inicio=CIUDAD_INICIO)
     t_nn = time.perf_counter() - t0
-    costo_nn = tour_length(ruta_nn, D)
+    costo_nn = longitud_ruta(ruta_nn, D)
 
     t0 = time.perf_counter()
-    ruta_2opt = two_opt(ruta_nn, D)
+    ruta_2opt = dos_opt(ruta_nn, D)
     t_2opt = time.perf_counter() - t0
-    costo_2opt = tour_length(ruta_2opt, D)
+    costo_2opt = longitud_ruta(ruta_2opt, D)
 
     filas = [
         {
-            "algoritmo": "nearest_neighbor",
+            "algoritmo": "vecino_mas_cercano",
             "longitud": costo_nn,
             "gap_pct": round((costo_nn - OPTIMO_BERLIN52) / OPTIMO_BERLIN52 * 100, 2),
             "tiempo_s": round(t_nn, 4),
         },
         {
-            "algoritmo": "nearest_neighbor+2opt",
+            "algoritmo": "vecino_mas_cercano+2opt",
             "longitud": costo_2opt,
             "gap_pct": round((costo_2opt - OPTIMO_BERLIN52) / OPTIMO_BERLIN52 * 100, 2),
             "tiempo_s": round(t_2opt, 4),

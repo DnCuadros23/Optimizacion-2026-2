@@ -1,8 +1,8 @@
 n_ciudades,metodo,optimo,tiempo_s
-8,fuerza_bruta,2551,0.0071
+8,fuerza_bruta,2551,0.0085
 8,held_karp,2551,0.0014
-9,fuerza_bruta,2820,0.06
-9,held_karp,2820,0.0039
-10,fuerza_bruta,2826,0.62
-10,held_karp,2826,0.0079
-12,held_karp,4056,0.0444
+9,fuerza_bruta,2820,0.0573
+9,held_karp,2820,0.0031
+10,fuerza_bruta,2826,0.5779
+10,held_karp,2826,0.0083
+12,held_karp,4056,0.0469

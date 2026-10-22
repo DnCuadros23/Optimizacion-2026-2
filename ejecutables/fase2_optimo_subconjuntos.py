@@ -9,9 +9,8 @@ import csv
 import time
 from pathlib import Path
 
-from tsp.distance import matriz_distancias
-from tsp.exact import fuerza_bruta, held_karp
-from tsp.io import leer_tsp
+from tsp.datos import leer_tsp, matriz_distancias
+from tsp.exactos import fuerza_bruta, held_karp
 
 RAIZ = Path(__file__).resolve().parents[1]
 
