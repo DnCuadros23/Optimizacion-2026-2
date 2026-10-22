@@ -1,32 +1,10 @@
-"""Heurísticas para el TSP: vecino más cercano (construye una ruta) y 2-opt (la mejora).
-
-A diferencia de fuerza bruta y Held-Karp, no garantizan el óptimo, pero
-corren en tiempo razonable sobre instancias grandes como berlin52.
+"""2-opt: toma una ruta ya armada (por ejemplo, la de vecino más cercano) y la mejora
+invirtiendo tramos, hasta quedar en un óptimo local (ninguna inversión ya ayuda).
 """
 import numpy as np
 
 
-def nearest_neighbor(D: np.ndarray, start: int = 0):
-    """Construye una ruta greedy: desde la ciudad actual salta siempre a la más cercana sin visitar.
-
-    Si hay un empate de distancia, gana la ciudad de menor índice (desempate determinista).
-    """
-    n = D.shape[0]
-    visitada = [False] * n
-    visitada[start] = True
-    ruta = [start]
-    actual = start
-
-    for _ in range(n - 1):
-        siguiente = min((c for c in range(n) if not visitada[c]), key=lambda c: D[actual, c])
-        ruta.append(siguiente)
-        visitada[siguiente] = True
-        actual = siguiente
-
-    return ruta
-
-
-def two_opt(tour, D: np.ndarray):
+def dos_opt(ruta, D: np.ndarray):
     """Mejora local 2-opt con estrategia de primera mejora (first improvement).
 
     Para cada par de aristas (a,b) y (c,d) de la ruta, invertir el tramo entre
@@ -34,7 +12,7 @@ def two_opt(tour, D: np.ndarray):
     se encuentra un Δ<0 se aplica de inmediato y se reinicia el barrido; el
     resultado es un óptimo local: ninguna de esas inversiones ya mejora la ruta.
     """
-    ruta = list(tour)
+    ruta = list(ruta)
     n = len(ruta)
     hay_mejora = True
 
