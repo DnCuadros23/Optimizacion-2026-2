@@ -1,0 +1,3 @@
+algoritmo,longitud,gap_pct,tiempo_s
+nearest_neighbor,8980,19.07,0.0004
+nearest_neighbor+2opt,7967,5.64,0.0037
