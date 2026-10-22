@@ -19,16 +19,16 @@ class Instancia:
     coords: np.ndarray  # shape (n, 2); fila i = coordenadas (x, y) de la ciudad i, en el orden del archivo
 
 
-def leer_tsp(ruta) -> Instancia:
+def leer_tsp(ruta_archivo) -> Instancia:
     """Lee un archivo TSPLIB EUC_2D y devuelve su nombre, su dimensión (n) y sus coordenadas."""
-    ruta = Path(ruta)
+    ruta_archivo = Path(ruta_archivo)
     nombre = None
     dimension = None
     tipo_peso = None
     coords: dict[int, tuple[float, float]] = {}
     en_coords = False  # True una vez que ya se pasó la línea NODE_COORD_SECTION
 
-    with open(ruta, "r", encoding="utf-8") as f:
+    with open(ruta_archivo, "r", encoding="utf-8") as f:
         for linea in f:
             linea = linea.strip()
             if not linea:
@@ -58,7 +58,7 @@ def leer_tsp(ruta) -> Instancia:
         raise ValueError(f"Tipo de distancia no soportado: {tipo_peso!r} (este parser solo lee EUC_2D)")
     if dimension is None or len(coords) != dimension:
         raise ValueError(
-            f"DIMENSION ({dimension}) no coincide con el número de coordenadas leídas ({len(coords)}) en {ruta}"
+            f"DIMENSION ({dimension}) no coincide con el número de coordenadas leídas ({len(coords)}) en {ruta_archivo}"
         )
 
     # se ordena por índice de ciudad para que coords[i] corresponda siempre a la ciudad i

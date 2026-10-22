@@ -1,5 +1,5 @@
 """Pruebas del parser TSPLIB: que lea bien el nombre, la dimensión (n) y las coordenadas."""
-from tsp.io import leer_tsp
+from tsp.datos import leer_tsp
 
 
 def test_berlin52_tiene_52_ciudades(data_dir):
