@@ -1,0 +1,6 @@
+algo,mejor,media,desviacion,gap_mejor_pct,gap_medio_pct
+genetico,7758,8144.8,237.4227133776089,2.86,7.99
+hormigas,7680,7913.133333333333,73.78614641176787,1.83,4.92
+nearest_neighbor,8980,8980.0,0.0,19.07,19.07
+nearest_neighbor+2opt,7967,7967.0,0.0,5.64,5.64
+recocido_simulado,7542,7550.7,42.670469478519145,0.0,0.12
