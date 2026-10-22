@@ -190,12 +190,22 @@ Implementado en `src/tsp/metaheuristicas/hormigas.py`: `_matriz_eta` (η=1/d, pr
 
 **Aceptación (4a–4c):** cumplida — los tres algoritmos producen permutaciones válidas, son reproducibles con la misma semilla y mejoran claramente una ruta aleatoria en berlin52. Resumen de resultados sobre berlin52 completo con los valores de partida de la guía: recocido 7542 (gap 0 %), hormigas 7911 (gap 4.89 %), 2-opt 7967 (gap 5.64 %), genético 8610 (gap 14.16 %) — ese orden, con las brechas más grandes en los métodos cuyos parámetros (p_m, beta, rho) todavía no se calibran, es justo el punto que desarrolla la fase 6.
 
-### Fase 5 — Experimentos
-Implementar `src/tsp/experimentos.py`. Para berlin52: NN, NN+2-opt (determinísticos, 1 corrida) y SA, GA, ACO con 30 semillas (0..29), todos con la misma regla de presupuesto (mismo número de evaluaciones o mismo tope de tiempo; elegir una y documentarla).
-Guardar `results/tables/berlin52_runs.csv` con columnas: `instance, algo, config_id, seed, length, gap_pct, time_s`.
-Guardar también el historial de convergencia de cada corrida.
-Luego generar `results/tables/berlin52_resumen.csv` con mejor, media, desviación, gap de la mejor y gap medio por algoritmo.
-**Aceptación:** los dos CSV existen, `gap_pct` usa 7542, ninguna longitud es menor que 7542 (si lo es, hay un error de distancia o de ruta).
+### Fase 5 — Experimentos ✅
+Implementado en `src/tsp/experimentos.py`. **Regla de presupuesto elegida:** NN y NN+2-opt son determinísticos (1 corrida); las tres metaheurísticas corren con los mismos parámetros de partida ya probados en la fase 4 (mismo orden de tiempo por corrida, unos pocos segundos; el tiempo real de cada una queda en `time_s`), con 30 semillas (0..29) cada una.
+`ejecutables/fase5_experimentos_berlin52.py` generó:
+- `results/tables/berlin52_runs.csv` (92 filas: 2 determinísticas + 3 métodos × 30 semillas).
+- `results/tables/berlin52_historial.csv` (convergencia de cada corrida, para la fase 8).
+- `results/tables/berlin52_resumen.csv`, con mejor, media, desviación y gaps por algoritmo:
+
+| algoritmo | mejor | media | desviación | gap mejor | gap medio |
+|---|---|---|---|---|---|
+| recocido_simulado | 7542 | 7583.9 | 110.9 | 0.00 % | 0.56 % |
+| hormigas | 7858 | 7967.0 | 56.4 | 4.19 % | 5.64 % |
+| nearest_neighbor+2opt | 7967 | 7967.0 | 0.0 | 5.64 % | 5.64 % |
+| genético | 7732 | 8485.1 | 343.2 | 2.52 % | 12.51 % |
+| nearest_neighbor | 8980 | 8980.0 | 0.0 | 19.07 % | 19.07 % |
+
+**Aceptación:** cumplida — los dos CSV existen, `gap_pct` usa 7542 y ninguna longitud quedó por debajo del óptimo (se valida con un `assert` en el propio script). El genético es el que varía más entre semillas (desviación 343, la más alta de todas) — otra pista a favor de calibrar `p_m` en la fase 6.
 
 ### Fase 6 — Calibración de parámetros (sección 5.1)
 Con una configuración base por método, variar un parámetro a la vez con 10 semillas (SA: `T0` y `alpha_cool`; GA: `N` y `p_m`; ACO: `rho` y `beta`), con valores bajo/medio/alto.
