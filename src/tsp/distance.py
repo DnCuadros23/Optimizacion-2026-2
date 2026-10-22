@@ -1,16 +1,20 @@
-"""Matriz de distancias con redondeo TSPLIB y costo de una ruta L(π)."""
+"""Matriz de distancias (d_ij) con redondeo TSPLIB y costo L(π) de una ruta."""
 import numpy as np
 
 
 def matriz_distancias(coords: np.ndarray) -> np.ndarray:
-    """Matriz de distancias EUC_2D con redondeo TSPLIB: int(sqrt(dx**2+dy**2)+0.5)."""
+    """Construye d_ij: distancia euclidiana entre cada par de ciudades, redondeada como en TSPLIB."""
+    # diff[i, j] = coords[i] - coords[j], para las dos coordenadas (x, y) a la vez
     diff = coords[:, None, :] - coords[None, :, :]
     distancias = np.sqrt((diff ** 2).sum(axis=2))
+    # TSPLIB redondea al entero más cercano (no trunca): int(dist + 0.5)
     return (distancias + 0.5).astype(int)
 
 
 def tour_length(tour, D: np.ndarray) -> int:
-    """Costo L(π) de la ruta: suma de distancias consecutivas más el regreso al origen."""
+    """Calcula L(π): la distancia total de la ruta, incluyendo el regreso a la primera ciudad."""
     tour = np.asarray(tour)
+    # "siguiente" recorre la ruta desplazada una posición, así la última ciudad
+    # queda emparejada con la primera y el regreso al origen entra en la suma
     siguiente = np.roll(tour, -1)
     return int(D[tour, siguiente].sum())
