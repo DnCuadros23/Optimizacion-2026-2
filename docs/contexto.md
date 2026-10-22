@@ -109,21 +109,32 @@ Informe en LaTeX (Overleaf), presentación en la semana 7.
 
 ## 7. Estructura del repositorio
 
+La carpeta `src/tsp/` está dividida igual que el informe (una carpeta por subsección de la 3), para que sea fácil ubicar y explicar cada parte:
+
 ```
 tsp/
 ├── README.md
 ├── requirements.txt
-├── docs/contexto.md              # este archivo
-├── data/raw/                     # berlin52.tsp, eil51.tsp
+├── docs/contexto.md                    # este archivo
+├── data/raw/                           # berlin52.tsp, eil51.tsp, optimos_conocidos.csv
 ├── src/tsp/
-│   ├── io.py                     # parser TSPLIB
-│   ├── distance.py               # matriz de distancias, tour_length
-│   ├── exact.py                  # fuerza bruta, Held-Karp
-│   ├── heuristics.py             # vecino más cercano, 2-opt
-│   ├── sa.py  ga.py  aco.py      # metaheurísticas
-│   ├── experiments.py            # corridas y CSV
-│   └── plots.py                  # figuras
-├── tests/
+│   ├── datos/                          # lectura TSPLIB y función de costo (sección 5.2)
+│   │   ├── lector_tsp.py               #   leer_tsp
+│   │   └── distancias.py               #   matriz_distancias, longitud_ruta
+│   ├── exactos/                        # métodos exactos (sección 3.1)
+│   │   ├── fuerza_bruta.py
+│   │   └── held_karp.py
+│   ├── heuristicas/                    # heurísticas (sección 3.2)
+│   │   ├── vecino_cercano.py
+│   │   └── dos_opt.py
+│   ├── metaheuristicas/                # metaheurísticas (sección 3.3) — fase 4
+│   │   ├── recocido.py
+│   │   ├── genetico.py
+│   │   └── hormigas.py
+│   ├── experimentos.py                 # corridas con varias semillas y CSV — fase 5
+│   └── graficos.py                     # figuras — fase 8
+├── ejecutables/                        # un script corto por fase: corre, imprime y guarda el CSV
+├── tests/                              # misma organización que src/tsp/
 └── results/{tables,figures}/
 ```
 
@@ -139,54 +150,54 @@ Cada fase tiene un criterio de aceptación. No avanzar si el criterio no se cump
 Crear la estructura de carpetas de la sección 7, `requirements.txt` y un entorno virtual. No escribir algoritmos todavía.
 **Aceptación:** el árbol coincide con la sección 7 y `pytest` corre (aunque sin tests).
 
-### Fase 1 — Datos y función de costo
-Implementar `src/tsp/io.py` y `src/tsp/distance.py`.
-- Descargar `berlin52.tsp` y `eil51.tsp` desde el sitio oficial TSPLIB95 a `data/raw/`. Si la descarga falla, documentarlo y esperar a que se coloquen los archivos manualmente.
-- Parser propio de `NODE_COORD_SECTION` (tipo `EUC_2D`).
-- Matriz de distancias con redondeo TSPLIB: `int(sqrt(dx**2+dy**2)+0.5)`.
-- `tour_length(tour, D)` con regreso al origen: `L(π) = Σ d(π_i, π_{i+1}) + d(π_n, π_1)`.
-- Tests: n=52 para berlin52 y n=51 para eil51; D simétrica con diagonal 0. Si existe el archivo de tour óptimo de berlin52, su longitud debe dar 7542.
-**Aceptación:** tests en verde; `tour_length` del tour óptimo de berlin52 = 7542 (o, si no hay archivo de tour, se documenta que esa validación queda para la fase 2).
+### Fase 1 — Datos y función de costo ✅
+Implementado en `src/tsp/datos/` (`lector_tsp.py`, `distancias.py`).
+- `berlin52.tsp` y `eil51.tsp` descargados a `data/raw/` (el sitio oficial no respondió; se usó un mirror verificado, ver nota al final de la sección 10).
+- `leer_tsp`: parser propio de `NODE_COORD_SECTION` (tipo `EUC_2D`).
+- `matriz_distancias`: redondeo TSPLIB `int(sqrt(dx**2+dy**2)+0.5)`.
+- `longitud_ruta(ruta, D)` con regreso al origen: `L(π) = Σ d(π_i, π_{i+1}) + d(π_n, π_1)`.
+- Tests en `tests/datos/`: n=52 para berlin52 y n=51 para eil51; D simétrica con diagonal 0.
+**Aceptación:** tests en verde. No había un archivo de tour óptimo de berlin52 para comprobar `longitud_ruta` = 7542 directamente; esa comprobación queda cubierta por la fase 2 (validación exacta) y por los gaps de las fases 3 en adelante.
 
-### Fase 2 — Validación exacta en subconjuntos pequeños
-Implementar `src/tsp/exact.py` con fuerza bruta (fija la ciudad 0, permuta el resto) y Held-Karp (programación dinámica con bitmask, devuelve longitud y ruta).
-Tests: en subconjuntos de las primeras 8, 9 y 10 ciudades de berlin52, fuerza bruta y Held-Karp deben dar la misma longitud.
-Guardar en `results/tables/optimo_subconjuntos.csv` el óptimo de las primeras 10 y 12 ciudades (Held-Karp para 12). Reportar el tiempo de cada uno.
-**Aceptación:** ambos métodos coinciden; el CSV existe. Estos óptimos son la referencia para validar las heurísticas en pequeño.
+### Fase 2 — Validación exacta en subconjuntos pequeños ✅
+Implementado en `src/tsp/exactos/` (`fuerza_bruta.py`, `held_karp.py`): fuerza bruta (fija la ciudad 0, permuta el resto) y Held-Karp (programación dinámica con bitmask, devuelve longitud y ruta).
+Tests en `tests/exactos/`: en subconjuntos de las primeras 8, 9 y 10 ciudades de berlin52, fuerza bruta y Held-Karp dan la misma longitud (2551, 2820 y 2826).
+`ejecutables/fase2_optimo_subconjuntos.py` genera `results/tables/optimo_subconjuntos.csv` con el óptimo y el tiempo de cada método (más el óptimo de 12 ciudades, solo con Held-Karp: 4056).
+**Aceptación:** cumplida — ambos métodos coinciden; el CSV existe.
 
-### Fase 3 — Heurísticas
-Implementar `src/tsp/heuristics.py`:
-- `nearest_neighbor(D, start)`: desempate determinista (menor índice).
-- `two_opt(tour, D)`: primera mejora o mejor mejora (elegir una y documentarla). Evaluar cada movimiento con `Δ = d(a,c)+d(b,d)−d(a,b)−d(c,d)` en O(1) y revertir el tramo solo si Δ<0. Termina en óptimo local.
-Tests: ambas devuelven permutaciones válidas; 2-opt nunca empeora la ruta de entrada; en el subconjunto de 10 ciudades, el gap vs. Held-Karp se reporta.
-Correr NN y NN+2-opt en berlin52 y reportar longitud y gap vs. 7542.
-**Aceptación:** NN+2-opt ≤ NN en longitud; gaps reportados. Como orden de magnitud, el informe esperaba ~25 % para NN y pocos % para 2-opt (no es meta a forzar).
+### Fase 3 — Heurísticas ✅
+Implementado en `src/tsp/heuristicas/` (`vecino_cercano.py`, `dos_opt.py`):
+- `vecino_mas_cercano(D, inicio)`: desempate determinista (menor índice).
+- `dos_opt(ruta, D)`: estrategia de primera mejora. Evalúa cada movimiento con `Δ = d(a,c)+d(b,d)−d(a,b)−d(c,d)` en O(1) y revierte el tramo solo si Δ<0. Termina en óptimo local.
+Tests en `tests/heuristicas/`: ambas devuelven permutaciones válidas; 2-opt nunca empeora la ruta de entrada; en el subconjunto de 10 ciudades, 2-opt llega al óptimo exacto (gap 0 %).
+`ejecutables/fase3_heuristicas_berlin52.py` corre NN y NN+2-opt en berlin52 completo: NN = 8980 (gap 19.07 %), NN+2-opt = 7967 (gap 5.64 %), guardado en `results/tables/heuristicas_berlin52.csv`.
+**Aceptación:** cumplida — NN+2-opt ≤ NN en longitud; gaps dentro del orden de magnitud esperado por el informe.
 
 ### Fase 4 — Metaheurísticas
-Una por vez (4a, 4b, 4c), cada una con su test.
+Una por vez (4a, 4b, 4c), cada una en su propio archivo dentro de `src/tsp/metaheuristicas/`, con su test y su script en `ejecutables/`. Como esta parte sí se va a exponer y correr en vivo, los parámetros de cada método van como argumentos con valor por defecto bien visible al inicio de la función (no escondidos ni repetidos en varios lados), para poder cambiarlos y volver a correr sin rebuscar.
 
 **4a — Recocido simulado**
-Implementar `src/tsp/sa.py` con movimiento 2-opt por Δ en O(1).
-Parámetros: `T0`, `alpha_cool`, `T_min`, `L_iter` (usar `alpha_cool` para no confundir con α de ACO).
+Implementar `src/tsp/metaheuristicas/recocido.py` con movimiento 2-opt por Δ en O(1).
+Parámetros: `T0`, `alpha_cool`, `T_min`, `L_iter` (se usa `alpha_cool` para no confundir con la α de ACO).
 Acepta si Δ≤0, o con probabilidad `exp(−Δ/T)`. Enfriamiento `T ← alpha_cool·T`.
 Entrada: ruta inicial (por defecto la de vecino más cercano) y semilla.
 Devuelve mejor ruta, su longitud e historial del mejor-hasta-ahora por iteración.
 Incluir una función que calcule `T0` para aceptar ~80 % de empeoramientos al inicio.
 
 **4b — Genético**
-Implementar `src/tsp/ga.py`: individuo = permutación, aptitud `1/L(π)`, selección por torneo (k=3), cruce OX, mutación por intercambio o inversión, elitismo `e`. Parámetros: `N`, `p_c`, `p_m`, `G_max`, `e`. Semilla fija.
+Implementar `src/tsp/metaheuristicas/genetico.py`: individuo = permutación, aptitud `1/L(π)`, selección por torneo (k=3), cruce OX, mutación por intercambio o inversión, elitismo `e`. Parámetros: `N`, `p_c`, `p_m`, `G_max`, `e`. Semilla fija.
 Test: tras cruce y mutación, todo hijo es una permutación válida (sin repetidos ni faltantes).
 Devuelve mejor ruta, longitud e historial.
 
-**4c — ACO (Ant System)**
-Implementar `src/tsp/aco.py`. Probabilidad de ir a j desde i ∝ `τ_ij^α · η_ij^β` con `η=1/d_ij` entre ciudades no visitadas. Actualización: `τ ← (1−ρ)τ + Σ_k Q/L_k` sobre las aristas de cada hormiga (matriz simétrica). Parámetros: `m`, `α`, `β`, `ρ`, `Q`, `t_max`.
+**4c — ACO (colonia de hormigas)**
+Implementar `src/tsp/metaheuristicas/hormigas.py`. Probabilidad de ir a j desde i ∝ `τ_ij^α · η_ij^β` con `η=1/d_ij` entre ciudades no visitadas. Actualización: `τ ← (1−ρ)τ + Σ_k Q/L_k` sobre las aristas de cada hormiga (matriz simétrica). Parámetros: `m`, `α`, `β`, `ρ`, `Q`, `t_max`.
 Vectorizar con numpy; proteger `d_ij=0`. Semilla fija. Devuelve mejor ruta, longitud e historial.
 Test: con τ inicial uniforme, la probabilidad de la primera decisión es proporcional a `1/d^β`.
 
 **Aceptación (4a–4c):** cada algoritmo produce permutaciones válidas, es reproducible con la misma semilla y mejora claramente a una ruta aleatoria en berlin52.
 
 ### Fase 5 — Experimentos
-Implementar `src/tsp/experiments.py`. Para berlin52: NN, NN+2-opt (determinísticos, 1 corrida) y SA, GA, ACO con 30 semillas (0..29), todos con la misma regla de presupuesto (mismo número de evaluaciones o mismo tope de tiempo; elegir una y documentarla).
+Implementar `src/tsp/experimentos.py`. Para berlin52: NN, NN+2-opt (determinísticos, 1 corrida) y SA, GA, ACO con 30 semillas (0..29), todos con la misma regla de presupuesto (mismo número de evaluaciones o mismo tope de tiempo; elegir una y documentarla).
 Guardar `results/tables/berlin52_runs.csv` con columnas: `instance, algo, config_id, seed, length, gap_pct, time_s`.
 Guardar también el historial de convergencia de cada corrida.
 Luego generar `results/tables/berlin52_resumen.csv` con mejor, media, desviación, gap de la mejor y gap medio por algoritmo.
@@ -205,7 +216,7 @@ Repetir la fase 5 con eil51 (óptimo conocido: verificar el valor en el archivo 
 **Aceptación:** tabla comparativa por instancia; si la matriz de 6 nodos se aporta, los resultados reproducen o corrigen las cifras del informe.
 
 ### Fase 8 — Entregables
-Generar las figuras (ruta final de cada algoritmo sobre las coordenadas, curvas de convergencia promedio ± desviación, boxplot de longitudes por algoritmo) en `results/figures/`.
+Implementar `src/tsp/graficos.py` y generar las figuras (ruta final de cada algoritmo sobre las coordenadas, curvas de convergencia promedio ± desviación, boxplot de longitudes por algoritmo) en `results/figures/`.
 Exportar las tablas finales a LaTeX con el estilo del informe: columnas con líneas verticales y `\hline`, `\renewcommand{\arraystretch}{1.3}` y `[H]`. Escribir `README.md` con cómo reproducir todo (comandos, semillas, versión de Python) y qué sección del informe respalda cada resultado.
 **Aceptación:** `README.md` permite reproducir desde cero; figuras y tablas listas para Overleaf.
 
@@ -215,7 +226,8 @@ Exportar las tablas finales a LaTeX con el estilo del informe: columnas con lín
 
 - Trabajar una fase a la vez (sección 8) y detenerse al terminar; no adelantar fases sin revisar el criterio de aceptación.
 - Python 3.11+, `numpy`, `pandas`, `matplotlib`, `pytest`. Sin librerías de optimización/TSP ya hechas: los algoritmos se implementan a mano, porque son el objeto del proyecto.
-- Notación del informe en el código: `n` (número de ciudades), `V` (conjunto de ciudades), `d_ij` (matriz de distancias), `π` (una ruta/permutación), `L(π)` (su costo). Parámetros de las metaheurísticas con los nombres del informe (SA: `T0, alpha_cool, T_min, L_iter`; GA: `N, p_c, p_m, G_max, e`; ACO: `m, alpha, beta, rho, Q, t_max`).
+- **Nombres en español** (carpetas, archivos, funciones, variables), para que se entiendan sin traducir: `vecino_mas_cercano`, `dos_opt`, `fuerza_bruta`, `longitud_ruta`, `ruta`, etc. Excepciones: nombres propios de algoritmos (`held_karp`) y la notación matemática del informe, que se mantiene tal cual (`n`, `V`, `d_ij`, `π`, `L(π)`, y los parámetros de las metaheurísticas: SA `T0, alpha_cool, T_min, L_iter`; GA `N, p_c, p_m, G_max, e`; ACO `m, alpha, beta, rho, Q, t_max`).
+- **El código se expone y se corre en vivo** (el profesor puede pedir cambiar un valor y volver a correr, o preguntar cómo funciona una parte): cada método va en su propio archivo chico y enfocado en una sola cosa (nunca todo junto en uno gigante), organizado en carpetas que calzan con las secciones del informe (`exactos/` ↔ 3.1, `heuristicas/` ↔ 3.2, `metaheuristicas/` ↔ 3.3), y los parámetros de cada función quedan como argumentos con su valor por defecto visible, fáciles de ubicar y cambiar.
 - Distancias TSPLIB: `int(sqrt(dx**2+dy**2)+0.5)`. `L(π)` incluye el regreso a la ciudad de origen.
 - Gap = `(L − L*)/L* × 100`. Óptimos conocidos: berlin52 = 7542, eil51 = 426 (ver `data/raw/optimos_conocidos.csv`). Si alguna longitud calculada resulta menor que el óptimo, hay un error que corregir.
 - Todo algoritmo estocástico recibe una semilla y es reproducible; los experimentos finales se corren con 30 semillas.
