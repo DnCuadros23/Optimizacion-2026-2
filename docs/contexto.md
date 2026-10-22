@@ -176,18 +176,13 @@ Tests en `tests/heuristicas/`: ambas devuelven permutaciones válidas; 2-opt nun
 ### Fase 4 — Metaheurísticas
 Una por vez (4a, 4b, 4c), cada una en su propio archivo dentro de `src/tsp/metaheuristicas/`, con su test y su script en `ejecutables/`. Como esta parte sí se va a exponer y correr en vivo, los parámetros de cada método van como argumentos con valor por defecto bien visible al inicio de la función (no escondidos ni repetidos en varios lados), para poder cambiarlos y volver a correr sin rebuscar.
 
-**4a — Recocido simulado**
-Implementar `src/tsp/metaheuristicas/recocido.py` con movimiento 2-opt por Δ en O(1).
-Parámetros: `T0`, `alpha_cool`, `T_min`, `L_iter` (se usa `alpha_cool` para no confundir con la α de ACO).
-Acepta si Δ≤0, o con probabilidad `exp(−Δ/T)`. Enfriamiento `T ← alpha_cool·T`.
-Entrada: ruta inicial (por defecto la de vecino más cercano) y semilla.
-Devuelve mejor ruta, su longitud e historial del mejor-hasta-ahora por iteración.
-Incluir una función que calcule `T0` para aceptar ~80 % de empeoramientos al inicio.
+**4a — Recocido simulado** ✅
+Implementado en `src/tsp/metaheuristicas/recocido.py` con movimiento 2-opt por Δ en O(1): `_movimiento_aleatorio` (el mismo vecindario de 2-opt, elegido al azar), `calcular_T0` (calibra T0 para ~80 % de empeoramientos aceptados al inicio) y `recocido_simulado` (bucle con enfriamiento `T ← alpha_cool·T`). 3 tests en verde.
+`ejecutables/fase4a_recocido_berlin52.py`, partiendo de vecino más cercano con `L_iter=500`, llega al **óptimo exacto: 7542 (gap 0 %)**.
 
-**4b — Genético**
-Implementar `src/tsp/metaheuristicas/genetico.py`: individuo = permutación, aptitud `1/L(π)`, selección por torneo (k=3), cruce OX, mutación por intercambio o inversión, elitismo `e`. Parámetros: `N`, `p_c`, `p_m`, `G_max`, `e`. Semilla fija.
-Test: tras cruce y mutación, todo hijo es una permutación válida (sin repetidos ni faltantes).
-Devuelve mejor ruta, longitud e historial.
+**4b — Genético** ✅
+Implementado en `src/tsp/metaheuristicas/genetico.py`: `_poblacion_inicial`, `_evaluar` (aptitud `1/L(π)`), `_seleccion_por_torneo` (k=3), `_cruce_ox` (Order Crossover), `_mutacion` (intercambio o inversión, elegido al azar) y `genetico` (bucle con elitismo `e`). 6 tests en verde, incluyendo que cruce y mutación siempre dan permutaciones válidas.
+`ejecutables/fase4b_genetico_berlin52.py`, con los valores de partida de la sección 5 (`N=150, p_c=0.9, p_m=0.05, G_max=500, e=3`), da 8610 (gap 14.16 %) — peor que 2-opt. Es esperado: con `p_m` bajo, el genético converge antes de tiempo. Una prueba rápida con varias semillas mostró que subir `p_m` a 0.2–0.3 mejora mucho el resultado (llegó a tocar el óptimo exacto alguna vez) — buena pista para la calibración formal de la fase 6, que justo ajusta `N` y `p_m`.
 
 **4c — ACO (colonia de hormigas)**
 Implementar `src/tsp/metaheuristicas/hormigas.py`. Probabilidad de ir a j desde i ∝ `τ_ij^α · η_ij^β` con `η=1/d_ij` entre ciudades no visitadas. Actualización: `τ ← (1−ρ)τ + Σ_k Q/L_k` sobre las aristas de cada hormiga (matriz simétrica). Parámetros: `m`, `α`, `β`, `ρ`, `Q`, `t_max`.
