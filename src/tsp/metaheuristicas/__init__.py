@@ -1,4 +1,4 @@
-"""Metaheurísticas (sección 3.3 del informe): recocido simulado, genético y colonia de hormigas.
+"""Metaheurísticas (sección 3.3 del informe): recocido simulado, genético y colonia de hormigas."""
+from .recocido import calcular_T0, recocido_simulado
 
-Se completa en la Fase 4.
-"""
+__all__ = ["recocido_simulado", "calcular_T0"]
