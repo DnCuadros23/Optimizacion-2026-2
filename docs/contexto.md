@@ -184,12 +184,11 @@ Implementado en `src/tsp/metaheuristicas/recocido.py` con movimiento 2-opt por �
 Implementado en `src/tsp/metaheuristicas/genetico.py`: `_poblacion_inicial`, `_evaluar` (aptitud `1/L(π)`), `_seleccion_por_torneo` (k=3), `_cruce_ox` (Order Crossover), `_mutacion` (intercambio o inversión, elegido al azar) y `genetico` (bucle con elitismo `e`). 6 tests en verde, incluyendo que cruce y mutación siempre dan permutaciones válidas.
 `ejecutables/fase4b_genetico_berlin52.py`, con los valores de partida de la sección 5 (`N=150, p_c=0.9, p_m=0.05, G_max=500, e=3`), da 8610 (gap 14.16 %) — peor que 2-opt. Es esperado: con `p_m` bajo, el genético converge antes de tiempo. Una prueba rápida con varias semillas mostró que subir `p_m` a 0.2–0.3 mejora mucho el resultado (llegó a tocar el óptimo exacto alguna vez) — buena pista para la calibración formal de la fase 6, que justo ajusta `N` y `p_m`.
 
-**4c — ACO (colonia de hormigas)**
-Implementar `src/tsp/metaheuristicas/hormigas.py`. Probabilidad de ir a j desde i ∝ `τ_ij^α · η_ij^β` con `η=1/d_ij` entre ciudades no visitadas. Actualización: `τ ← (1−ρ)τ + Σ_k Q/L_k` sobre las aristas de cada hormiga (matriz simétrica). Parámetros: `m`, `α`, `β`, `ρ`, `Q`, `t_max`.
-Vectorizar con numpy; proteger `d_ij=0`. Semilla fija. Devuelve mejor ruta, longitud e historial.
-Test: con τ inicial uniforme, la probabilidad de la primera decisión es proporcional a `1/d^β`.
+**4c — ACO (colonia de hormigas)** ✅
+Implementado en `src/tsp/metaheuristicas/hormigas.py`: `_matriz_eta` (η=1/d, protegiendo la diagonal), `_probabilidades` (∝ τ^α·η^β), `_construir_ruta` (una hormiga recorre todas las ciudades al azar según esas probabilidades), `_actualizar_feromona` (evapora ρ, refuerza con Q/L_k sobre las aristas de cada hormiga) y `hormigas` (bucle principal). 5 tests en verde, incluyendo el pedido por el plan: con τ inicial uniforme, la probabilidad de la primera decisión es proporcional a `η^β` (se cancela τ^α al ser constante).
+`ejecutables/fase4c_hormigas_berlin52.py`, con `m=n, alpha=1, beta=3, rho=0.3, Q=100, t_max=100` (valores de la guía, `beta` y `rho` sin calibrar todavía), da **7911 (gap 4.89 %)** — mejor que el genético y parecido a 2-opt, sin necesitar ningún ajuste fino.
 
-**Aceptación (4a–4c):** cada algoritmo produce permutaciones válidas, es reproducible con la misma semilla y mejora claramente a una ruta aleatoria en berlin52.
+**Aceptación (4a–4c):** cumplida — los tres algoritmos producen permutaciones válidas, son reproducibles con la misma semilla y mejoran claramente una ruta aleatoria en berlin52. Resumen de resultados sobre berlin52 completo con los valores de partida de la guía: recocido 7542 (gap 0 %), hormigas 7911 (gap 4.89 %), 2-opt 7967 (gap 5.64 %), genético 8610 (gap 14.16 %) — ese orden, con las brechas más grandes en los métodos cuyos parámetros (p_m, beta, rho) todavía no se calibran, es justo el punto que desarrolla la fase 6.
 
 ### Fase 5 — Experimentos
 Implementar `src/tsp/experimentos.py`. Para berlin52: NN, NN+2-opt (determinísticos, 1 corrida) y SA, GA, ACO con 30 semillas (0..29), todos con la misma regla de presupuesto (mismo número de evaluaciones o mismo tope de tiempo; elegir una y documentarla).
