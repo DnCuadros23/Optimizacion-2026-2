@@ -50,6 +50,21 @@ Todas las corridas con semillas usan `0..29` (experimentos) o `0..9`
 (calibración), siempre reproducibles: la misma semilla da siempre el mismo
 resultado.
 
+## Notebooks (para correr en vivo en la exposición)
+
+`notebooks/` tiene la misma lógica que `ejecutables/`, pero en celdas
+separadas y comentadas, pensada para mostrar y correr en vivo frente al
+profesor. Un notebook por fase (`01_datos_y_metodos_exactos.ipynb` ...
+`07_entregables.ipynb`), cada parámetro en su propia celda para poder
+cambiarlo y volver a correr sin buscar en el código. No repiten corridas
+pesadas (30 semillas, calibración completa): corren una demo chica en vivo y
+cargan los resultados completos ya guardados en `results/tables/`.
+
+```bash
+.venv/Scripts/jupyter notebook notebooks/   # Windows
+# .venv/bin/jupyter notebook notebooks/     # Linux/Mac
+```
+
 ## Qué sección del informe respalda cada resultado
 
 | Sección del informe | Resultado en este repositorio |

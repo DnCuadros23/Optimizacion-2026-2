@@ -117,6 +117,7 @@ tsp/
 ├── requirements.txt
 ├── docs/contexto.md                    # este archivo
 ├── data/raw/                           # berlin52.tsp, eil51.tsp, optimos_conocidos.csv
+├── config/best.yaml                    # configuración final de cada metaheurística — fase 6
 ├── src/tsp/
 │   ├── datos/                          # lectura TSPLIB y función de costo (sección 5.2)
 │   │   ├── lector_tsp.py               #   leer_tsp
@@ -132,13 +133,18 @@ tsp/
 │   │   ├── genetico.py
 │   │   └── hormigas.py
 │   ├── experimentos.py                 # corridas con varias semillas y CSV — fase 5
-│   └── graficos.py                     # figuras — fase 8
+│   ├── calibracion.py                  # variar un parámetro a la vez — fase 6
+│   ├── config.py                       # lee config/best.yaml
+│   └── graficos.py                     # figuras y tablas LaTeX — fase 8
 ├── ejecutables/                        # un script corto por fase: corre, imprime y guarda el CSV
+├── notebooks/                          # lo mismo que ejecutables/, en celdas, para correr en vivo en la exposición
 ├── tests/                              # misma organización que src/tsp/
 └── results/{tables,figures}/
 ```
 
-Python 3.11+, `numpy`, `pandas`, `matplotlib`, `pytest`. Sin librerías de optimización ya hechas: los algoritmos se implementan a mano porque son el objeto del proyecto.
+Python 3.11+, `numpy`, `pandas`, `matplotlib`, `pytest`, `jupyter`. Sin librerías de optimización ya hechas: los algoritmos se implementan a mano porque son el objeto del proyecto.
+
+**Notebooks (`notebooks/`):** cada uno corresponde a una fase (01 datos/exactos, 02 heurísticas, 03 metaheurísticas, 04 experimentos, 05 calibración, 06 segunda instancia, 07 entregables), con celdas separadas y comentadas, y los parámetros de cada método en su propia celda para poder cambiarlos y volver a correr en vivo. No cambian la lógica de `src/tsp/`: solo la importan y la muestran en formato de celdas, pensado para la exposición (correr el código delante del profesor, mostrar un resultado, cambiar un parámetro si lo piden).
 
 ---
 
