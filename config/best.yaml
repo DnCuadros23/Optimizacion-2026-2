@@ -1,0 +1,20 @@
+# Configuracion final de cada metaheuristica, elegida en la fase 6
+# (el nivel bajo/medio/alto con menor gap medio en la calibracion)
+recocido_simulado:
+  alpha_cool: 0.998
+  T_min: 0.001
+  L_iter: 500
+  T0: 11090.0
+genetico:
+  N: 300
+  p_c: 0.9
+  p_m: 0.3
+  G_max: 500
+  e: 3
+hormigas:
+  m: None
+  alpha: 1
+  beta: 3.0
+  rho: 0.1
+  Q: 100
+  t_max: 100

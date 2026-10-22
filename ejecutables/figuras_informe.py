@@ -6,6 +6,9 @@ mostrar resultados reales mientras se documenta el avance.
 """
 from pathlib import Path
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 

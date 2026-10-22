@@ -38,9 +38,17 @@ def _corrida_nn_2opt(D):
 
 
 def _corrida_recocido(D, semilla, params):
-    """Una corrida de recocido simulado, partiendo de vecino mas cercano."""
+    """Una corrida de recocido simulado, partiendo de vecino mas cercano.
+
+    Si 'params' trae un T0 fijo (por ejemplo, el elegido en la fase 6), se usa
+    ese; si no, T0 se calcula para esta semilla con calcular_T0 (como en la
+    fase 4/5, antes de calibrar).
+    """
     ruta_inicial = vecino_mas_cercano(D, inicio=0)
-    T0 = calcular_T0(ruta_inicial, D, semilla=semilla)
+    params = dict(params)
+    T0 = params.pop("T0", None)
+    if T0 is None:
+        T0 = calcular_T0(ruta_inicial, D, semilla=semilla)
     t0 = time.perf_counter()
     _, costo, historial = recocido_simulado(ruta_inicial, D, T0=T0, semilla=semilla, **params)
     tiempo = time.perf_counter() - t0
@@ -65,7 +73,7 @@ def _corrida_hormigas(n, D, semilla, params):
 
 def ejecutar_experimentos(
     instancia, D, optimo, semillas=range(30),
-    params_recocido=None, params_genetico=None, params_hormigas=None,
+    params_recocido=None, params_genetico=None, params_hormigas=None, config_id="base",
 ):
     """Corre NN y NN+2-opt una vez, y recocido/genetico/hormigas con cada semilla.
 
@@ -84,7 +92,7 @@ def ejecutar_experimentos(
         filas.append({
             "instance": instancia,
             "algo": algo,
-            "config_id": "base",
+            "config_id": config_id,
             "seed": semilla,
             "length": costo,
             "gap_pct": round((costo - optimo) / optimo * 100, 2),
