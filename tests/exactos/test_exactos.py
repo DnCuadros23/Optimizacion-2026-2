@@ -1,7 +1,6 @@
 """Pruebas de los metodos exactos: en subconjuntos chicos, fuerza bruta y Held-Karp deben coincidir."""
-from tsp.distance import matriz_distancias
-from tsp.exact import fuerza_bruta, held_karp
-from tsp.io import leer_tsp
+from tsp.datos import leer_tsp, matriz_distancias
+from tsp.exactos import fuerza_bruta, held_karp
 
 
 def _matriz_subconjunto(data_dir, k):

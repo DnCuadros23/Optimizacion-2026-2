@@ -1,33 +1,8 @@
-"""Métodos exactos para el TSP: fuerza bruta y Held-Karp.
-
-Ambos garantizan el óptimo, pero crecen muy rápido con n (fuerza bruta
-prueba (n-1)! rutas; Held-Karp usa n^2 * 2^n). Por eso en este proyecto
-solo se usan para validar subconjuntos chicos (hasta 12 ciudades), nunca
-sobre berlin52 o eil51 completos.
+"""Held-Karp: programación dinámica con bitmask. También garantiza el óptimo,
+y crece mucho más lento que fuerza bruta (n^2 * 2^n en vez de (n-1)!), pero
+sigue sin servir para instancias grandes — aquí se usa hasta 12 ciudades.
 """
-import itertools
-
 import numpy as np
-
-
-def fuerza_bruta(D: np.ndarray):
-    """Revisa las (n-1)! rutas que fijan la ciudad 0 al inicio y devuelve la mejor (ruta, costo)."""
-    n = D.shape[0]
-    mejor_ruta = None
-    mejor_costo = None
-
-    for resto in itertools.permutations(range(1, n)):
-        # costo de 0 -> resto[0] -> ... -> resto[-1] -> 0 (regreso al origen incluido)
-        costo = D[0, resto[0]]
-        for a, b in zip(resto, resto[1:]):
-            costo += D[a, b]
-        costo += D[resto[-1], 0]
-
-        if mejor_costo is None or costo < mejor_costo:
-            mejor_costo = costo
-            mejor_ruta = (0,) + resto
-
-    return list(mejor_ruta), int(mejor_costo)
 
 
 def held_karp(D: np.ndarray):
